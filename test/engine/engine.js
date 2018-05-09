@@ -13,7 +13,7 @@ import { describe, it } from 'mocha'
 import fetch from 'node-fetch'
 import request from 'request'
 
-import * as Factories from '../../src/indexEthereum.js'
+import * as Factories from '../../src/index.js'
 import fixtures from './fixtures.json'
 
 // const DATA_STORE_FOLDER = 'txEngineFolderBTC'
@@ -246,11 +246,11 @@ for (const fixture of fixtures) {
     it('Get BlockHeight', function (done) {
       this.timeout(10000)
       request.get(
-        'https://api.etherscan.io/api?module=proxy&action=eth_blockNumber',
+        'http://ec2-54-159-86-65.compute-1.amazonaws.com:8080/api/blockheight',
         (err, res, body) => {
           assert(!err, 'getting block height from a second source')
           emitter.once('onBlockHeightChange', height => {
-            const thirdPartyHeight = parseInt(JSON.parse(body).result, 16)
+            const thirdPartyHeight = parseInt(JSON.parse(body).block_height, 8)
             assert(height >= thirdPartyHeight, 'Block height')
             assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
             done() // Can be "done" since the promise resolves before the event fires but just be on the safe side

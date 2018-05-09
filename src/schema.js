@@ -19,11 +19,7 @@ export const CurrencyInfoSchema = {
         'otherSettings': {
           'type': 'object',
           'properties': {
-            'etherscanApiServers': {
-              'type': 'array',
-              'items': {'type': 'string'}
-            },
-            'superethServers': {
+            'apiServers': {
               'type': 'array',
               'items': {'type': 'string'}
             }

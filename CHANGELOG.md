@@ -1,4 +1,4 @@
-# edge-currency-ethereum
+# edge-currency-kusd
 
 ## 0.10.1
 

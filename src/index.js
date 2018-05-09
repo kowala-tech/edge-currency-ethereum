@@ -2,9 +2,9 @@
  * Created by paul on 8/8/17.
  */
 // @flow
-import { currencyInfo } from './currencyInfoETH.js'
-import { EthereumEngine } from './currencyEngineETH.js'
-import { DATA_STORE_FILE, DATA_STORE_FOLDER, WalletLocalData } from './ethTypes.js'
+import { currencyInfo } from './currencyInfo.js'
+import { Engine } from './currencyEngine.js'
+import { DATA_STORE_FILE, DATA_STORE_FOLDER, WalletLocalData } from './types.js'
 import type {
   EdgeCurrencyEngine,
   EdgeCurrencyEngineOptions,
@@ -17,13 +17,13 @@ import type {
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
 import { BN } from 'bn.js'
-// import { CurrencyInfoScheme } from './ethSchema.js'
+// import { CurrencyInfoScheme } from './schema.js'
 
 export { calcMiningFee } from './miningFees.js'
 
 const Buffer = require('buffer/').Buffer
-const ethWallet = require('../lib/export-fixes-bundle.js').Wallet
-const EthereumUtil = require('../lib/export-fixes-bundle.js').Util
+const walletUtils = require('../lib/export-fixes-bundle.js').Wallet
+const Util = require('../lib/export-fixes-bundle.js').Util
 
 let io
 
@@ -79,30 +79,30 @@ function getParameterByName (param, url) {
 //   }
 // }
 
-export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
+export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
   pluginType: 'currency',
   pluginName: currencyInfo.pluginName,
 
   async makePlugin (opts: any): Promise<EdgeCurrencyPlugin> {
     io = opts.io
 
-    console.log(`Creating Currency Plugin for ethereum`)
-    const ethereumPlugin:EdgeCurrencyPlugin = {
-      pluginName: 'ethereum',
+    console.log(`Creating Currency Plugin for kUSD`)
+    const kusdPlugin:EdgeCurrencyPlugin = {
+      pluginName: 'kusdtestnet',
       currencyInfo,
 
       createPrivateKey: (walletType: string) => {
         const type = walletType.replace('wallet:', '')
 
-        if (type === 'ethereum') {
+        if (type === 'kusdtestnet') {
           const cryptoObj = {
             randomBytes: randomBuffer
           }
-          ethWallet.overrideCrypto(cryptoObj)
+          walletUtils.overrideCrypto(cryptoObj)
 
-          const wallet = ethWallet.generate(false)
-          const ethereumKey = wallet.getPrivateKeyString().replace('0x', '')
-          return { ethereumKey }
+          const wallet = walletUtils.generate(false)
+          const kusdtestnetKey = wallet.getPrivateKeyString().replace('0x', '')
+          return { kusdtestnetKey }
         } else {
           throw new Error('InvalidWalletType')
         }
@@ -110,14 +110,13 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
       derivePublicKey: (walletInfo: EdgeWalletInfo) => {
         const type = walletInfo.type.replace('wallet:', '')
-        if (type === 'ethereum') {
-          const privKey = hexToBuf(walletInfo.keys.ethereumKey)
-          const wallet = ethWallet.fromPrivateKey(privKey)
-
-          const ethereumAddress = wallet.getAddressString()
-          // const ethereumKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
-          // const ethereumPublicAddress = '0x9fa817e5A48DD1adcA7BEc59aa6E3B1F5C4BeA9a'
-          return { ethereumAddress }
+        if (type === 'kusdtestnet') {
+          const privKey = hexToBuf(walletInfo.keys.kusdtestnetKey)
+          const wallet = walletUtils.fromPrivateKey(privKey)
+          const kusdtestnetPublicAddress = wallet.getAddressString()
+          // const kusdtestnetKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
+          // const kusdtestnetPublicAddress = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
+          return { kusdtestnetPublicAddress }
         } else {
           throw new Error('InvalidWalletType')
         }
@@ -125,52 +124,52 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
       // XXX Deprecated. To be removed once Core supports createPrivateKey and derivePublicKey -paulvp
       createMasterKeys: (walletType: string) => {
-        if (walletType === 'ethereum') {
+        if (walletType === 'kusdtestnet') {
           const cryptoObj = {
             randomBytes: randomBuffer
           }
-          ethWallet.overrideCrypto(cryptoObj)
+          walletUtils.overrideCrypto(cryptoObj)
 
-          const wallet = ethWallet.generate(false)
-          const ethereumKey = wallet.getPrivateKeyString().replace('0x', '')
-          const ethereumPublicAddress = wallet.getAddressString()
-          // const ethereumKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
-          // const ethereumPublicAddress = '0x9fa817e5A48DD1adcA7BEc59aa6E3B1F5C4BeA9a'
-          return {ethereumKey, ethereumPublicAddress}
+          const wallet = walletUtils.generate(false)
+          const kusdtestnetKey = wallet.getPrivateKeyString().replace('0x', '')
+          const kusdtestnetPublicAddress = wallet.getAddressString()
+          // const kusdtestnetKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
+          // const kusdtestnetPublicAddress = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
+          return {kusdtestnetKey, kusdtestnetPublicAddress}
         } else {
           return null
         }
       },
 
       async makeEngine (walletInfo: EdgeWalletInfo, opts: EdgeCurrencyEngineOptions): Promise<EdgeCurrencyEngine> {
-        const ethereumEngine = new EthereumEngine(io, walletInfo, opts)
+        const engine = new Engine(io, walletInfo, opts)
         try {
           const result =
-            await ethereumEngine.walletLocalFolder
+            await engine.walletLocalFolder
               .folder(DATA_STORE_FOLDER)
               .file(DATA_STORE_FILE)
               .getText(DATA_STORE_FOLDER, 'walletLocalData')
 
-          ethereumEngine.walletLocalData = new WalletLocalData(result)
-          ethereumEngine.walletLocalData.ethereumAddress = ethereumEngine.walletInfo.keys.ethereumAddress
+          engine.walletLocalData = new WalletLocalData(result)
+          engine.walletLocalData.kusdtestnetAddress = engine.walletInfo.keys.kusdtestnetAddress
         } catch (err) {
           try {
             console.log(err)
             console.log('No walletLocalData setup yet: Failure is ok')
-            ethereumEngine.walletLocalData = new WalletLocalData(null)
-            ethereumEngine.walletLocalData.ethereumAddress = ethereumEngine.walletInfo.keys.ethereumAddress
-            await ethereumEngine.walletLocalFolder
+            engine.walletLocalData = new WalletLocalData(null)
+            engine.walletLocalData.kusdtestnetAddress = engine.walletInfo.keys.kusdtestnetAddress
+            await engine.walletLocalFolder
               .folder(DATA_STORE_FOLDER)
               .file(DATA_STORE_FILE)
-              .setText(JSON.stringify(ethereumEngine.walletLocalData))
+              .setText(JSON.stringify(engine.walletLocalData))
           } catch (e) {
             console.log('Error writing to localDataStore. Engine not started:' + err)
           }
         }
-        for (const token of ethereumEngine.walletLocalData.enabledTokens) {
-          ethereumEngine.tokenCheckStatus[token] = 0
+        for (const token of engine.walletLocalData.enabledTokens) {
+          engine.tokenCheckStatus[token] = 0
         }
-        return ethereumEngine
+        return engine
       },
 
       parseUri: (uri: string) => {
@@ -181,8 +180,7 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
         if (
           typeof parsedUri.scheme !== 'undefined' &&
-          parsedUri.scheme !== 'ethereum' &&
-          parsedUri.scheme !== 'ether'
+          parsedUri.scheme !== 'kusdtestnet'
         ) {
           throw new Error('InvalidUriError') // possibly scanning wrong crypto type
         }
@@ -201,7 +199,7 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
           prefix = 'pay' // The default prefix according to EIP-681 is "pay"
         }
         address = contractAddress
-        const valid: boolean = EthereumUtil.isValidAddress(address)
+        const valid: boolean = Util.isValidAddress(address)
         if (!valid) {
           throw new Error('InvalidPublicAddressError')
         }
@@ -239,13 +237,13 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
         }
         const amountStr = getParameterByName('amount', uri)
         if (amountStr && typeof amountStr === 'string') {
-          const denom = getDenomInfo('ETH')
+          const denom = getDenomInfo('KUSD')
           if (!denom) {
             throw new Error('InternalErrorInvalidCurrencyCode')
           }
           nativeAmount = bns.mul(amountStr, denom.multiplier)
           nativeAmount = bns.toFixed(nativeAmount, 0, 0)
-          currencyCode = 'ETH'
+          currencyCode = 'KUSD'
         }
         const label = getParameterByName('label', uri)
         const message = getParameterByName('message', uri)
@@ -276,7 +274,7 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
         if (!obj.publicAddress) {
           throw new Error('InvalidPublicAddressError')
         }
-        const valid: boolean = EthereumUtil.isValidAddress(obj.publicAddress)
+        const valid: boolean = Util.isValidAddress(obj.publicAddress)
         if (!valid) {
           throw new Error('InvalidPublicAddressError')
         }
@@ -286,7 +284,7 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
           let queryString: string = ''
 
           if (typeof obj.nativeAmount === 'string') {
-            let currencyCode: string = 'ETH'
+            let currencyCode: string = 'KUSD'
             const nativeAmount:string = obj.nativeAmount
             if (typeof obj.currencyCode === 'string') {
               currencyCode = obj.currencyCode
@@ -310,7 +308,7 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
           queryString = queryString.substr(0, queryString.length - 1)
 
           const serializeObj = {
-            scheme: 'ethereum',
+            scheme: 'kusdtestnet',
             path: obj.publicAddress,
             query: queryString
           }
@@ -322,13 +320,13 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
     if (global.OS && global.OS === 'ios') {
       const metaTokens = []
-      for (const metaToken of ethereumPlugin.currencyInfo.metaTokens) {
+      for (const metaToken of kusdPlugin.currencyInfo.metaTokens) {
         const currencyCode = metaToken.currencyCode
-        if (ethereumPlugin.currencyInfo.defaultSettings.otherSettings.iosAllowedTokens[currencyCode] === true) {
+        if (kusdPlugin.currencyInfo.defaultSettings.otherSettings.iosAllowedTokens[currencyCode] === true) {
           metaTokens.push(metaToken)
         }
       }
-      ethereumPlugin.currencyInfo.metaTokens = metaTokens
+      kusdPlugin.currencyInfo.metaTokens = metaTokens
     }
 
     async function initPlugin (opts: any) {
@@ -342,16 +340,13 @@ export const ethereumCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
       //       .getText(DATA_STORE_FOLDER, 'walletLocalData')
       //
       //   this.walletLocalData = new WalletLocalData(result)
-      //   this.walletLocalData.ethereumAddress = this.walletInfo.keys.ethereumAddress
+      //   this.walletLocalData.kusdtestnetAddress = this.walletInfo.keys.kusdtestnetAddress
       // }
 
       // Spin off network query to get updated currencyInfo and save that to disk for future bootups
 
-      return ethereumPlugin
+      return kusdPlugin
     }
     return initPlugin(opts)
   }
 }
-
-// Capitalizing the name was a mistake, but we keep it around for now:
-export { ethereumCurrencyPluginFactory as EthereumCurrencyPluginFactory }

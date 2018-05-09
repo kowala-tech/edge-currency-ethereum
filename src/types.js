@@ -4,24 +4,22 @@
 // @flow
 
 import type { EdgeTransaction } from 'edge-core-js'
-import { currencyInfo } from './currencyInfoETH.js'
+import { currencyInfo } from './currencyInfo.js'
 export const DATA_STORE_FOLDER = 'txEngineFolder'
 export const DATA_STORE_FILE = 'walletLocalData.json'
 export const PRIMARY_CURRENCY = currencyInfo.currencyCode
 
-export type EthereumSettings = {
-  etherscanApiServers: Array<string>,
-  blockcypherApiServers: Array<string>,
-  superethServers: Array<string>,
+export type Settings = {
+  apiServers: Array<string>,
   iosAllowedTokens: {[currencyCode: string]: boolean}
 }
 
-type EthereumFeesGasLimit = {
+type FeesGasLimit = {
   regularTransaction: string,
   tokenTransaction: string
 }
 
-export type EthereumFeesGasPrice = {
+export type FeesGasPrice = {
   lowFee: string,
   standardFeeLow: string,
   standardFeeHigh: string,
@@ -34,15 +32,15 @@ export type EthereumFeesGasPrice = {
   highFee: string
 }
 
-export type EthereumFee = {
-  gasLimit: EthereumFeesGasLimit, gasPrice?: EthereumFeesGasPrice
+export type Fee = {
+  gasLimit: FeesGasLimit, gasPrice?: FeesGasPrice
 }
 
-export type EthereumFees = {
-  [address: string]: EthereumFee
+export type Fees = {
+  [address: string]: Fee
 }
 
-export type EthereumCalcedFees = {
+export type CalcedFees = {
   gasPrice: string,
   gasLimit: string
 }
@@ -84,7 +82,7 @@ const defaultNetworkFees = {
   }
 }
 
-export type EthCustomToken = {
+export type CustomToken = {
   currencyCode: string,
   currencyName: string,
   multiplier: string,
@@ -95,11 +93,11 @@ export class WalletLocalData {
   blockHeight: number
   lastAddressQueryHeight: number
   nextNonce: string
-  ethereumAddress: string
+  kusdtestnetAddress: string
   totalBalances: {[currencyCode: string]: string}
   enabledTokens: Array<string>
   transactionsObj: {[currencyCode: string]: Array<EdgeTransaction>}
-  networkFees: EthereumFees
+  networkFees: Fees
 
   constructor (jsonString: string | null) {
     this.blockHeight = 0
@@ -117,7 +115,7 @@ export class WalletLocalData {
 
     this.networkFees = defaultNetworkFees
 
-    this.ethereumAddress = ''
+    this.kusdtestnetAddress = ''
     this.enabledTokens = [ PRIMARY_CURRENCY ]
     if (jsonString !== null) {
       const data = JSON.parse(jsonString)
@@ -125,7 +123,7 @@ export class WalletLocalData {
       if (typeof data.blockHeight === 'number') this.blockHeight = data.blockHeight
       if (typeof data.lastAddressQueryHeight === 'string') this.lastAddressQueryHeight = data.lastAddressQueryHeight
       if (typeof data.nextNonce === 'string') this.nextNonce = data.nextNonce
-      if (typeof data.ethereumAddress === 'string') this.ethereumAddress = data.ethereumAddress
+      if (typeof data.kusdtestnetAddress === 'string') this.kusdtestnetAddress = data.kusdtestnetAddress
       if (typeof data.totalBalances !== 'undefined') this.totalBalances = data.totalBalances
       if (typeof data.enabledTokens !== 'undefined') this.enabledTokens = data.enabledTokens
       if (typeof data.networkFees !== 'undefined') this.networkFees = data.networkFees

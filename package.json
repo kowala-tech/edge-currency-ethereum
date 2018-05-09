@@ -1,23 +1,21 @@
 {
-  "name": "edge-currency-ethereum",
-  "version": "0.10.1",
-  "description": "Edge Ethereum currency plugin",
-  "homepage": "https://edgesecure.co/",
+  "name": "edge-currency-kusd",
+  "version": "0.0.1",
+  "description": "kUSD currency plugin for Edge",
+  "homepage": "https://kowala.tech/",
   "license": "SEE LICENSE IN LICENSE",
-  "author": "Edge (Airbitz, Inc)",
-  "contributors": [
-    "Paul Puey <paul@edgesecure.co>"
-  ],
+  "author": "Kowala",
+  "contributors": [],
   "files": [
     "CHANGELOG.md",
     "README.md",
     "lib/*"
   ],
-  "main": "./lib/indexEthereum.js",
-  "module": "./lib/indexEthereum.es.js",
+  "main": "./lib/index.js",
+  "module": "./lib/index.es.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Airbitz/edge-currency-ethereum.git"
+    "url": "git@github.com:kowala-tech/edge-currency-kusd.git"
   },
   "scripts": {
     "build": "npm run webpack && npm run rollup && npm run build:flow",

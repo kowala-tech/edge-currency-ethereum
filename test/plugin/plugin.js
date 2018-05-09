@@ -1,6 +1,6 @@
 // @flow
 import { describe, it, before } from 'mocha'
-import * as Factories from '../../src/indexEthereum.js'
+import * as Factories from '../../src/index.js'
 import { assert } from 'chai'
 import fixtures from './fixtures.json'
 
@@ -8,7 +8,7 @@ for (const fixture of fixtures) {
   const CurrencyPluginFactory = Factories[fixture['factory']]
   const WALLET_TYPE = fixture['WALLET_TYPE']
   const keyName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Key'
-  const address = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Address'
+  const address = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'PublicAddress'
 
   const opts = {
     io: {
