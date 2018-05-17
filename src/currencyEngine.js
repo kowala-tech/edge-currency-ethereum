@@ -176,7 +176,7 @@ class Engine {
   // Private methods
   // *************************************
   async fetchGetApi (cmd: string) {
-    const url = sprintf('%s/api%s', this.currentSettings.otherSettings.apiServers[0], cmd)
+    const url = sprintf('%s/%s', this.currentSettings.otherSettings.apiServers[0], cmd)
     return this.fetchGet(url)
   }
 
@@ -197,7 +197,7 @@ class Engine {
   // *************************************
   async blockHeightInnerLoop () {
     try {
-      const jsonObj = await this.fetchGetApi('/blockheight')
+      const jsonObj = await this.fetchGetApi('blockheight')
       const valid = validateObject(jsonObj, {
         'type': 'object',
         'properties': {
@@ -492,7 +492,7 @@ class Engine {
     }
 
     try {
-      url = sprintf('/transactions/%s', address, startBlock, endBlock)
+      url = sprintf('transactions/%s', address, startBlock, endBlock)
       jsonObj = await this.fetchGetApi(url)
       valid = validateObject(jsonObj, {
         'type': 'object',
@@ -1474,7 +1474,7 @@ class Engine {
     this.log(`Sent transaction to network:\n${transactionParsed}\n`)
 
     const hexTx = edgeTransaction.signedTx.replace('0x', '')
-    const url = sprintf('/broadcasttx/%s', hexTx)
+    const url = sprintf('broadcasttx/%s', hexTx)
     const jsonObj = await this.fetchGetApi(url)
 
     this.log('broadcastOverAPI jsonObj:', jsonObj)
