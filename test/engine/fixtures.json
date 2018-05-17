@@ -8,11 +8,11 @@
     "xpub": "0x466d506cd7fbcd29a06015da03f0de814df050ee",
     "invalid key name": {
       "type": "wallet:kusdtestnet",
-      "keys": { "privateKeyz" :"12345678abcd" }
+      "keys": { "kusdtestnetKeyz" :"12345678abcd" }
     },
     "invalid wallet type": {
       "type": "shitcoin",
-      "keys": { "privateKeyz" :"12345678abcd" }
+      "keys": { "kusdtestnetKeyz" :"12345678abcd" }
     },
     "parseUri": {
       "address only": ["0xE94327D07Fc17907b4DB788E5aDf2ed424adDff6", "0xE94327D07Fc17907b4DB788E5aDf2ed424adDff6"],
