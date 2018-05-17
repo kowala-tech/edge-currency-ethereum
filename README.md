@@ -22,7 +22,7 @@ const context = makeEdgeContext({
 
 ## Contributing
 
-You'll need to install Yarn 1.3.2 globally on your machine
+You'll need to install Yarn 1.6.0 globally on your machine
 
 To run a local version of this repo inside the full Edge Wallet app, clone this repo at the same level as `edge-react-gui`
 
@@ -30,14 +30,14 @@ To run a local version of this repo inside the full Edge Wallet app, clone this 
     cd edge-currency-kusd
     yarn
 
-Run `npm run test` to run the unit tests.
+Run `yarn test` to run the unit tests.
 
 To use the local cloned version of this repo, `cd edge-react-gui` and run
 
-    npm run updot edge-currency-kusd
-    npm run postinstall
+    yarn run updot edge-currency-kusd
+    yarn run postinstall
 
-This will copy the necessary files from `edge-currency-kusd` into the `edge-react-gui/node_modules/edge-currency-kusd` replacing the npm installed version. This needs to be done after any modifications to `edge-currency-kusd`
+This will copy the necessary files from `edge-currency-kusd` into the `edge-react-gui/node_modules/edge-currency-kusd` replacing the installed version. This needs to be done after any modifications to `edge-currency-kusd`
 
 ## License
 BSD 3

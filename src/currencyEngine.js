@@ -45,25 +45,11 @@ const SAVE_DATASTORE_MILLISECONDS = 10000
 const ADDRESS_QUERY_LOOKBACK_BLOCKS = (4 * 60 * 24 * 7) // ~ one week
 
 const PRIMARY_CURRENCY = currencyInfo.currencyCode
-const CHECK_UNCONFIRMED = false
 const INFO_SERVERS = ['https://info1.edgesecure.co:8444']
 
 type BroadcastResults = {
   incrementNonce: boolean,
   decrementNonce: boolean
-}
-
-function unpadAddress (address: string): string {
-  const unpadded = bns.add('0', address, 16)
-  return unpadded
-}
-
-function padAddress (address: string): string {
-  const normalizedAddress = normalizeAddress(address)
-  const padding = 64 - normalizedAddress.length
-  const zeroString = '0000000000000000000000000000000000000000000000000000000000000000'
-  const out = '0x' + zeroString.slice(0, padding) + normalizedAddress
-  return out
 }
 
 class Params {
@@ -296,88 +282,6 @@ class Engine {
     }
   }
 
-  processEtherscanTokenTransaction (tx: any, currencyCode: string) {
-    let netNativeAmount:string // Amount received into wallet
-    const ourReceiveAddresses:Array<string> = []
-
-    // const nativeValueBN = new BN(tx.value, 10)
-    const paddedAddress = padAddress(this.walletLocalData.kusdtestnetAddress)
-    let fromAddress
-    let toAddress
-
-    if (tx.topics[1] === paddedAddress) {
-      netNativeAmount = bns.sub('0', tx.data)
-      fromAddress = this.walletLocalData.kusdtestnetAddress
-      toAddress = unpadAddress(tx.topics[2])
-    } else {
-      fromAddress = unpadAddress(tx.topics[1])
-      toAddress = this.walletLocalData.kusdtestnetAddress
-      netNativeAmount = bns.add('0', tx.data)
-      ourReceiveAddresses.push(this.walletLocalData.kusdtestnetAddress.toLowerCase())
-    }
-
-    if (netNativeAmount.length > 50) {
-      // Etherscan occasionally send back a transactino with a corrupt amount in tx.data. Ignore this tx.
-      return
-    }
-
-    const params = new Params(
-      [ fromAddress ],
-      [ toAddress ],
-      '',
-      tx.gasPrice,
-      tx.gasUsed,
-      '',
-      0,
-      null
-    )
-
-    const edgeTransaction:EdgeTransaction = {
-      txid: tx.transactionHash,
-      date: parseInt(tx.timeStamp),
-      currencyCode,
-      blockHeight: parseInt(bns.add('0', tx.blockHeight)),
-      nativeAmount: netNativeAmount,
-      networkFee: '0',
-      ourReceiveAddresses,
-      signedTx: 'unsigned_right_now',
-      otherParams: params
-    }
-
-    const idx = this.findTransaction(currencyCode, tx.transactionHash)
-    if (idx === -1) {
-      this.log(sprintf('New token transaction: %s', tx.transactionHash))
-
-      // New transaction not in database
-      this.addTransaction(currencyCode, edgeTransaction)
-
-      this.edgeTxLibCallbacks.onTransactionsChanged(
-        this.transactionsChangedArray
-      )
-      this.transactionsChangedArray = []
-    } else {
-      // Already have this tx in the database. See if anything changed
-      const transactionsArray = this.walletLocalData.transactionsObj[ currencyCode ]
-      const edgeTx = transactionsArray[ idx ]
-
-      if (
-        edgeTx.blockHeight !== edgeTransaction.blockHeight ||
-        edgeTx.networkFee !== edgeTransaction.networkFee ||
-        edgeTx.nativeAmount !== edgeTransaction.nativeAmount ||
-        edgeTx.otherParams.errorVal !== edgeTransaction.otherParams.errorVal
-      ) {
-        this.log(sprintf('Update token transaction: %s height:%s', edgeTx.txid, edgeTx.blockHeight))
-        this.updateTransaction(currencyCode, edgeTransaction, idx)
-        this.edgeTxLibCallbacks.onTransactionsChanged(
-          this.transactionsChangedArray
-        )
-        this.transactionsChangedArray = []
-      } else {
-        // this.log(sprintf('Old transaction. No Update: %s', edgeTx.txid))
-      }
-    }
-  }
-
   processUnconfirmedTransaction (tx: any) {
     const fromAddress = '0x' + tx.inputs[0].addresses[0]
     const toAddress = '0x' + tx.outputs[0].addresses[0]
@@ -588,92 +492,6 @@ class Engine {
     }
   }
 
-  async checkTokenTransactionsFetch (currencyCode: string) {
-    const address = padAddress(this.walletLocalData.kusdtestnetAddress)
-    let startBlock:number = 0
-    let checkAddressSuccess = true
-    let url = ''
-    let jsonObj = {}
-    let valid = false
-    if (this.walletLocalData.lastAddressQueryHeight > ADDRESS_QUERY_LOOKBACK_BLOCKS) {
-      // Only query for transactions as far back as ADDRESS_QUERY_LOOKBACK_BLOCKS from the last time we queried transactions
-      startBlock = this.walletLocalData.lastAddressQueryHeight - ADDRESS_QUERY_LOOKBACK_BLOCKS
-    }
-
-    const tokenInfo = this.getTokenInfo(currencyCode)
-    let contractAddress = ''
-    if (tokenInfo && typeof tokenInfo.contractAddress === 'string') {
-      contractAddress = tokenInfo.contractAddress
-    } else {
-      return
-    }
-
-    try {
-      url = sprintf('?module=logs&action=getLogs&fromBlock=%d&toBlock=latest&address=%s&topic0=0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&topic0_1_opr=and&topic1=%s&topic1_2_opr=or&topic2=%s',
-        startBlock, contractAddress, address, address)
-      jsonObj = await this.fetchGetApi(url)
-      valid = validateObject(jsonObj, {
-        'type': 'object',
-        'properties': {
-          'result': {
-            'type': 'array',
-            'items': {
-              'type': 'object',
-              'properties': {
-                'data': {'type': 'string'},
-                'blockNumber': {'type': 'string'},
-                'timeStamp': {'type': 'string'},
-                'transactionHash': {'type': 'string'},
-                'gasPrice': {'type': 'string'},
-                'gasUsed': {'type': 'string'},
-                'topics': {
-                  'type': 'array',
-                  'items': { 'type': 'string' }
-                }
-              },
-              'required': [
-                'data',
-                'blockNumber',
-                'timeStamp',
-                'transactionHash',
-                'gasPrice',
-                'gasUsed',
-                'topics'
-              ]
-            }
-          }
-        },
-        'required': ['result']
-      })
-
-      if (valid) {
-        const transactions = jsonObj.result
-        this.log(`Fetched token ${tokenInfo.currencyCode} transactions count: ${transactions.length}`)
-
-        // Get transactions
-        // Iterate over transactions in address
-        for (let i = 0; i < transactions.length; i++) {
-          const tx = transactions[i]
-          this.processEtherscanTokenTransaction(tx, currencyCode)
-          this.tokenCheckStatus[currencyCode] = ((i + 1) / transactions.length)
-          if (i % 10 === 0) {
-            this.updateOnAddressesChecked()
-          }
-        }
-        if (transactions.length === 0) {
-          this.tokenCheckStatus[currencyCode] = 1
-        }
-        this.updateOnAddressesChecked()
-      } else {
-        checkAddressSuccess = false
-      }
-    } catch (e) {
-      this.log(e)
-      checkAddressSuccess = false
-    }
-    return checkAddressSuccess
-  }
-
   async checkUnconfirmedTransactionsFetch () {
     const address = normalizeAddress(this.walletLocalData.kusdtestnetAddress)
     const url = sprintf('%s/v1/eth/main/txs/%s', this.currentSettings.otherSettings.apiServers[0], address)
@@ -768,30 +586,17 @@ class Engine {
       // ************************************
       // Fetch token balances
       // ************************************
-      // https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0x57d90b64a1a57749b0f932f1a3395792e12e7055&address=0xe04f27eb70e025b78871a2ad7eabe85e61212761&tag=latest&apikey=YourApiKeyToken
       for (const tk of this.walletLocalData.enabledTokens) {
         if (tk === PRIMARY_CURRENCY) {
-          url = sprintf('/balance/%s', address)
+          url = sprintf('balance/%s', address)
         } else {
-          if (this.getTokenStatus(tk)) {
-            const tokenInfo = this.getTokenInfo(tk)
-            if (tokenInfo && typeof tokenInfo.contractAddress === 'string') {
-              url = sprintf('?module=account&action=tokenbalance&contractaddress=%s&address=%s&tag=latest', tokenInfo.contractAddress, this.walletLocalData.kusdtestnetAddress)
-              promiseArray.push(this.checkTokenTransactionsFetch(tk))
-            } else {
-              continue
-            }
-          } else {
-            continue
-          }
+          continue
         }
         promiseArray.push(this.checkAddressFetch(tk, url))
       }
 
       promiseArray.push(this.checkTransactionsFetch())
-      if (CHECK_UNCONFIRMED) {
-        promiseArray.push(this.checkUnconfirmedTransactionsFetch())
-      }
+
       await Promise.all(promiseArray)
     } catch (e) {
       this.log('Error fetching address transactions: ' + address)
