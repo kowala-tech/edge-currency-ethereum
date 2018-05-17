@@ -257,6 +257,7 @@ class Engine {
       blockHeight: blockHeight,
       nativeAmount: netNativeAmount,
       networkFee: nativeNetworkFee,
+
       ourReceiveAddresses,
       signedTx: 'unsigned',
       otherParams: params
@@ -1448,8 +1449,8 @@ class Engine {
       to: edgeTransaction.otherParams.to[0],
       value: nativeAmountHex,
       data: data,
-      // EIP 155 chainId - mainnet: 1, testnet: 519374298533
-      chainId: 519374298533
+      // EIP 155 chainId - mainnet: 1, testnet: 1000
+      chainId: 1000
     }
 
     const privKey = Buffer.from(this.walletInfo.keys.kusdtestnetKey, 'hex')
