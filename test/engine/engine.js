@@ -246,7 +246,7 @@ for (const fixture of fixtures) {
     it('Get BlockHeight', function (done) {
       this.timeout(10000)
       request.get(
-        'http://wallet.kowala.io/api/blockheight',
+        'https://wallet.kowala.io/api/blockheight',
         (err, res, body) => {
           assert(!err, 'getting block height from a second source')
           emitter.once('onBlockHeightChange', height => {

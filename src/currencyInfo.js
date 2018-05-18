@@ -6,7 +6,7 @@ import type { Settings } from './types'
 
 const otherSettings:Settings = {
   apiServers: [
-    'http://wallet.kowala.io/api'
+    'https://wallet.kowala.io/api'
   ],
   iosAllowedTokens: {}
 }
