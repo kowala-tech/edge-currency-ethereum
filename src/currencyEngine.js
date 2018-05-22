@@ -30,17 +30,17 @@ import {
   type FeesGasPrice,
   type Fee
 } from './types.js'
-import { isHex, normalizeAddress, addHexPrefix, bufToHex, validateObject, toHex } from './utils.js'
+import { isHex, normalizeAddress, bufToHex, validateObject, toHex } from './utils.js'
 
 const Buffer = require('buffer/').Buffer
 const abi = require('../lib/export-fixes-bundle.js').ABI
 const walletUtils = require('../lib/export-fixes-bundle.js').Wallet
 const KusdTx = require('../lib/export-fixes-bundle.js').Transaction
 
-const ADDRESS_POLL_MILLISECONDS = 3000
-const BLOCKHEIGHT_POLL_MILLISECONDS = 5000
+const ADDRESS_POLL_MILLISECONDS = 5000
+const BLOCKHEIGHT_POLL_MILLISECONDS = (60 * 10 * 1000) // 10 minutes
 const NETWORKFEES_POLL_MILLISECONDS = (60 * 10 * 1000) // 10 minutes
-const SAVE_DATASTORE_MILLISECONDS = 10000
+const SAVE_DATASTORE_MILLISECONDS = 5000
 // const ADDRESS_QUERY_LOOKBACK_BLOCKS = '8' // ~ 2 minutes
 const ADDRESS_QUERY_LOOKBACK_BLOCKS = (4 * 60 * 24 * 7) // ~ one week
 
@@ -225,7 +225,7 @@ class Engine {
       ourReceiveAddresses.push(this.walletLocalData.kusdtestnetAddress.toLowerCase())
     }
 
-    const params = new Params(
+    const kusdParams = new Params(
       [ tx.from ],
       [ tx.to ],
       nativeNetworkFee,
@@ -235,6 +235,8 @@ class Engine {
       parseInt(0),
       null
     )
+
+    console.log(kusdParams)
 
     const edgeTransaction:EdgeTransaction = {
       txid: tx.hash,
@@ -246,7 +248,7 @@ class Engine {
 
       ourReceiveAddresses,
       signedTx: 'unsigned',
-      otherParams: params
+      otherParams: kusdParams
     }
 
     const idx = this.findTransaction(PRIMARY_CURRENCY, tx.hash)
@@ -279,73 +281,6 @@ class Engine {
       } else {
         // this.log(sprintf('Old transaction. No Update: %s', tx.hash))
       }
-    }
-  }
-
-  processUnconfirmedTransaction (tx: any) {
-    const fromAddress = '0x' + tx.inputs[0].addresses[0]
-    const toAddress = '0x' + tx.outputs[0].addresses[0]
-    const epochTime = Date.parse(tx.received) / 1000
-    const ourReceiveAddresses:Array<string> = []
-
-    let nativeAmount: string
-    if (normalizeAddress(fromAddress) === normalizeAddress(this.walletLocalData.kusdtestnetAddress)) {
-      nativeAmount = (0 - tx.total).toString(10)
-      nativeAmount = bns.sub(nativeAmount, tx.fees.toString(10))
-    } else {
-      nativeAmount = tx.total.toString(10)
-      ourReceiveAddresses.push(this.walletLocalData.kusdtestnetAddress)
-    }
-
-    const params = new Params(
-      [ fromAddress ],
-      [ toAddress ],
-      '',
-      '',
-      tx.fees.toString(10),
-      '',
-      0,
-      null
-    )
-
-    const edgeTransaction:EdgeTransaction = {
-      txid: addHexPrefix(tx.hash),
-      date: epochTime,
-      currencyCode: 'KUSD',
-      blockHeight: tx.block_height,
-      nativeAmount,
-      networkFee: tx.fees.toString(10),
-      ourReceiveAddresses,
-      signedTx: 'iwassignedyoucantrustme',
-      otherParams: params
-    }
-
-    const idx = this.findTransaction(PRIMARY_CURRENCY, tx.hash)
-    if (idx === -1) {
-      this.log(sprintf('processUnconfirmedTransaction: New transaction: %s', tx.hash))
-
-      // New transaction not in database
-      this.addTransaction(PRIMARY_CURRENCY, edgeTransaction)
-
-      this.edgeTxLibCallbacks.onTransactionsChanged(
-        this.transactionsChangedArray
-      )
-      this.transactionsChangedArray = []
-    } else {
-      // Already have this tx in the database. See if anything changed
-      // const transactionsArray:Array<EdgeTransaction> = this.walletLocalData.transactionsObj[ PRIMARY_CURRENCY ]
-      // const edgeTx:EdgeTransaction = transactionsArray[ idx ]
-      //
-      // if (edgeTx.blockHeight < tx.block_height || edgeTx.date > epochTime) {
-      //   this.log(sprintf('processUnconfirmedTransaction: Update transaction: %s height:%s', tx.hash, tx.blockHeight))
-      //   this.updateTransaction(PRIMARY_CURRENCY, edgeTransaction, idx)
-      //   this.edgeTxLibCallbacks.onTransactionsChanged(
-      //     this.transactionsChangedArray
-      //   )
-      //   this.transactionsChangedArray = []
-      // } else {
-      // this.log(sprintf('processUnconfirmedTransaction: Old transaction. No Update: %s', tx.hash))
-      // }
     }
   }
 
@@ -489,87 +424,6 @@ class Engine {
       this.walletLocalData.lastAddressQueryHeight = this.walletLocalData.blockHeight
     } else {
       this.edgeTxLibCallbacks.onAddressesChecked(totalStatus)
-    }
-  }
-
-  async checkUnconfirmedTransactionsFetch () {
-    const address = normalizeAddress(this.walletLocalData.kusdtestnetAddress)
-    const url = sprintf('%s/v1/eth/main/txs/%s', this.currentSettings.otherSettings.apiServers[0], address)
-    let jsonObj = null
-    try {
-      jsonObj = await this.fetchGet(url)
-    } catch (e) {
-      this.log(e)
-      this.log('Failed to fetch unconfirmed transactions')
-      return
-    }
-
-    const valid = validateObject(jsonObj, {
-      'type': 'array',
-      'items': {
-        'type': 'object',
-        'properties': {
-          'block_height': { 'type': 'number' },
-          'fees': { 'type': 'number' },
-          'received': { 'type': 'string' },
-          'addresses': {
-            'type': 'array',
-            'items': { 'type': 'string' }
-          },
-          'inputs': {
-            'type': 'array',
-            'items': {
-              'type': 'object',
-              'properties': {
-                'addresses': {
-                  'type': 'array',
-                  'items': { 'type': 'string' }
-                }
-              },
-              'required': [
-                'addresses'
-              ]
-            }
-          },
-          'outputs': {
-            'type': 'array',
-            'items': {
-              'type': 'object',
-              'properties': {
-                'addresses': {
-                  'type': 'array',
-                  'items': { 'type': 'string' }
-                }
-              },
-              'required': [
-                'addresses'
-              ]
-            }
-          }
-        },
-        'required': [
-          'fees',
-          'received',
-          'addresses',
-          'inputs',
-          'outputs'
-        ]
-      }
-    })
-
-    if (valid) {
-      const transactions = jsonObj
-
-      for (const tx of transactions) {
-        if (
-          normalizeAddress(tx.inputs[0].addresses[0]) === address ||
-          normalizeAddress(tx.outputs[0].addresses[0]) === address
-        ) {
-          this.processUnconfirmedTransaction(tx)
-        }
-      }
-    } else {
-      this.log('Invalid data for unconfirmed transactions')
     }
   }
 
