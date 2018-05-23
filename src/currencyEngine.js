@@ -211,11 +211,13 @@ class Engine {
     const gasPrice:string = String(tx.gas_price)
     const gasUsed:string = String(tx.gas_used)
     const amount:string = String(tx.amount)
+    const to:string = String(tx.to).toLowerCase()
+    const from:string = String(tx.from).toLowerCase()
     const blockHeight:number = parseInt(tx.block_height)
     const timestamp:number = parseInt(tx.timestamp)
     const nativeNetworkFee:string = bns.mul(gasPrice, gasUsed)
 
-    if (tx.from.toLowerCase() === this.walletLocalData.kusdtestnetAddress.toLowerCase()) {
+    if (from === this.walletLocalData.kusdtestnetAddress.toLowerCase()) {
       netNativeAmount = bns.sub('0', amount)
 
       // For spends, include the network fee in the transaction amount
@@ -226,8 +228,8 @@ class Engine {
     }
 
     const kusdParams = new Params(
-      [ tx.from ],
-      [ tx.to ],
+      [ from ],
+      [ to ],
       nativeNetworkFee,
       gasPrice,
       gasUsed,
@@ -235,8 +237,6 @@ class Engine {
       parseInt(0),
       null
     )
-
-    console.log(kusdParams)
 
     const edgeTransaction:EdgeTransaction = {
       txid: tx.hash,
@@ -473,6 +473,7 @@ class Engine {
   }
 
   addTransaction (currencyCode: string, edgeTransaction: EdgeTransaction) {
+    console.log(edgeTransaction)
     // Add or update tx in transactionsObj
     const idx = this.findTransaction(currencyCode, edgeTransaction.txid)
 
