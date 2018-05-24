@@ -6,23 +6,23 @@ const babelConf = {
 }
 
 export default {
-  entry: 'src/index.js',
+  input: 'src/index.js',
   external: [
     ...Object.keys(packageJson.dependencies),
     ...Object.keys(packageJson.devDependencies)
   ],
   plugins: [babel(babelConf)],
 
-  targets: [
+  output: [
     {
-      dest: packageJson['main'],
+      file: packageJson['main'],
       format: 'cjs',
-      sourceMap: true
+      sourcemap: true
     },
     {
-      dest: packageJson['module'],
+      file: packageJson['module'],
       format: 'es',
-      sourceMap: true
+      sourcemap: true
     }
   ]
 }

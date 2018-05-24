@@ -52,7 +52,7 @@ type BroadcastResults = {
   decrementNonce: boolean
 }
 
-class Params {
+class KusdParams {
   from: Array<string>
   to: Array<string>
   gas: string
@@ -227,7 +227,7 @@ class Engine {
       ourReceiveAddresses.push(this.walletLocalData.kusdtestnetAddress.toLowerCase())
     }
 
-    const kusdParams = new Params(
+    const kusdParams = new KusdParams(
       [ from ],
       [ to ],
       nativeNetworkFee,
@@ -473,7 +473,6 @@ class Engine {
   }
 
   addTransaction (currencyCode: string, edgeTransaction: EdgeTransaction) {
-    console.log(edgeTransaction)
     // Add or update tx in transactionsObj
     const idx = this.findTransaction(currencyCode, edgeTransaction.txid)
 
@@ -968,7 +967,7 @@ class Engine {
     }
 
     if (currencyCode === PRIMARY_CURRENCY) {
-      params = new Params(
+      params = new KusdParams(
         [this.walletLocalData.kusdtestnetAddress],
         [publicAddress],
         gasLimit,
