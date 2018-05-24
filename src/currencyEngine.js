@@ -984,7 +984,7 @@ class Engine {
       } else {
         throw new Error('makeSpend: Invalid contract address')
       }
-      params = new Params(
+      params = new KusdParams(
         [this.walletLocalData.kusdtestnetAddress],
         [contractAddress],
         gasLimit,
