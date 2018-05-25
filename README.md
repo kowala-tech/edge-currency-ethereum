@@ -5,7 +5,7 @@ Implements Kowala send/receive functionality per the spec for crypto currency pl
 
 ## Installing
 
-    npm i git://github.com/kowala-tech/edge-currency-kusd.git#develop -s
+    yarn add git://github.com/kowala-tech/edge-currency-kusd.git#develop
 
 ```
 import { kusdCurrencyPluginFactory } from `edge-currency-kusd`
@@ -20,24 +20,19 @@ const context = makeEdgeContext({
 })
 ```
 
-## Contributing
+## Docker
 
-You'll need to install Yarn 1.6.0 globally on your machine
+To build this plugin with `docker-compose`, use `docker-compose up`.
+
+## Contributing
 
 To run a local version of this repo inside the full Edge Wallet app, clone this repo at the same level as `edge-react-gui`
 
-    git clone git@github.com:Airbitz/edge-currency-kusd.git`
+    git clone git@github.com:kowala-tech/edge-currency-kusd.git`
     cd edge-currency-kusd
     yarn
 
 Run `yarn test` to run the unit tests.
-
-To use the local cloned version of this repo, `cd edge-react-gui` and run
-
-    yarn run updot edge-currency-kusd
-    yarn run postinstall
-
-This will copy the necessary files from `edge-currency-kusd` into the `edge-react-gui/node_modules/edge-currency-kusd` replacing the installed version. This needs to be done after any modifications to `edge-currency-kusd`
 
 ## License
 BSD 3
