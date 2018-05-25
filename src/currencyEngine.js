@@ -332,7 +332,7 @@ class Engine {
     }
 
     try {
-      url = sprintf('transactions/%s', address, startBlock, endBlock)
+      url = sprintf('transactions/%s/from/%s/to/%s', address, startBlock, endBlock)
       jsonObj = await this.fetchGetApi(url)
       valid = validateObject(jsonObj, {
         'type': 'object',
