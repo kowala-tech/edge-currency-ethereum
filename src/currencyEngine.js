@@ -38,7 +38,7 @@ const KusdTx = require('../lib/export-fixes-bundle.js').Transaction
 const ADDRESS_POLL_MILLISECONDS = 3000
 const BLOCKHEIGHT_POLL_MILLISECONDS = 3000
 const NETWORKFEES_POLL_MILLISECONDS = (60 * 10 * 1000) // 10 minutes
-const SAVE_DATASTORE_MILLISECONDS = 5000
+const SAVE_DATASTORE_MILLISECONDS = 1000
 const ADDRESS_QUERY_LOOKBACK_BLOCKS = (60 * 60 * 24 * 7) // ~ one week
 
 const PRIMARY_CURRENCY = currencyInfo.currencyCode
@@ -1070,8 +1070,8 @@ class Engine {
      to: edgeTransaction.otherParams.to[0],
      value: nativeAmountHex,
      data: data,
-     // EIP 155 chainId - mainnet: 1, testnet: 1000
-     chainId: 1000
+     // EIP 155 chainId - mainnet: 1, testnet: 2
+     chainId: 2
    }
 
    const privKey = Buffer.from(this.walletInfo.keys.kusdtestnetKey, 'hex')
@@ -1104,8 +1104,7 @@ class Engine {
      this.log('Error sending transaction')
      if (
        typeof jsonObj.error === 'string' &&
-    jsonObj.error.includes('Account nonce ') &&
-    jsonObj.error.includes('higher than transaction')
+    jsonObj.error.includes('nonce too low')
      ) {
        result.incrementNonce = true
      } else if (
