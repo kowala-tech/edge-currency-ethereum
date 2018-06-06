@@ -1,3 +1,7 @@
+/**
+ * Created by paul on 7/7/17.
+ */
+
 module.exports = {
   entry: './src/export-fixes.js',
   module: {
