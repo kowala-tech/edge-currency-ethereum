@@ -38,7 +38,7 @@ export function calcMiningFee (spendInfo: EdgeSpendInfo, networkFees: Fees): Cal
   //   }
   //
   //   let useLimit = 'regularTransaction'
-  //   if (spendInfo.currencyCode && spendInfo.currencyCode !== 'KUSD') {
+  //   if (spendInfo.currencyCode && spendInfo.currencyCode !== currencyInfo.currencyCode) {
   //     useLimit = 'tokenTransaction'
   //   }
   //
@@ -54,7 +54,7 @@ export function calcMiningFee (spendInfo: EdgeSpendInfo, networkFees: Fees): Cal
   //   }
   //   let nativeAmount = spendInfo.spendTargets[0].nativeAmount
   //   if (useLimit === 'tokenTransaction') {
-  //     // Small hack. Edgetimate the relative value of token to kusd as 10%
+  //     // Small hack. Edgetimate the relative value of token to kowala as 10%
   //     nativeAmount = bns.div(nativeAmount, '10')
   //   }
   //   if (!networkFeeForGasPrice.gasPrice) {

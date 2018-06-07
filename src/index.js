@@ -79,30 +79,30 @@ function getParameterByName (param, url) {
 //   }
 // }
 
-export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
+export const kowalaCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
   pluginType: 'currency',
   pluginName: currencyInfo.pluginName,
 
   async makePlugin (opts: any): Promise<EdgeCurrencyPlugin> {
     io = opts.io
 
-    console.log(`Creating Currency Plugin for kUSD`)
-    const kusdPlugin:EdgeCurrencyPlugin = {
-      pluginName: 'kusdtestnet',
+    console.log(`Creating Currency Plugin for Kowala`)
+    const kowalaPlugin:EdgeCurrencyPlugin = {
+      pluginName: currencyInfo.pluginName,
       currencyInfo,
 
       createPrivateKey: (walletType: string) => {
         const type = walletType.replace('wallet:', '')
 
-        if (type === 'kusdtestnet') {
+        if (type === currencyInfo.pluginName) {
           const cryptoObj = {
             randomBytes: randomBuffer
           }
           walletUtils.overrideCrypto(cryptoObj)
 
           const wallet = walletUtils.generate(false)
-          const kusdtestnetKey = wallet.getPrivateKeyString().replace('0x', '')
-          return { kusdtestnetKey }
+          const privateKey = wallet.getPrivateKeyString().replace('0x', '')
+          return { privateKey }
         } else {
           throw new Error('InvalidWalletType')
         }
@@ -110,13 +110,11 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
       derivePublicKey: (walletInfo: EdgeWalletInfo) => {
         const type = walletInfo.type.replace('wallet:', '')
-        if (type === 'kusdtestnet') {
-          const privKey = hexToBuf(walletInfo.keys.kusdtestnetKey)
+        if (type === currencyInfo.pluginName) {
+          const privKey = hexToBuf(walletInfo.keys.privateKey)
           const wallet = walletUtils.fromPrivateKey(privKey)
-          const kusdtestnetPublicAddress = wallet.getAddressString()
-          // const kusdtestnetKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
-          // const kusdtestnetPublicAddress = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
-          return { kusdtestnetPublicAddress }
+          const address = wallet.getAddressString()
+          return { address }
         } else {
           throw new Error('InvalidWalletType')
         }
@@ -124,18 +122,18 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
       // XXX Deprecated. To be removed once Core supports createPrivateKey and derivePublicKey -paulvp
       createMasterKeys: (walletType: string) => {
-        if (walletType === 'kusdtestnet') {
+        if (walletType === currencyInfo.pluginName) {
           const cryptoObj = {
             randomBytes: randomBuffer
           }
           walletUtils.overrideCrypto(cryptoObj)
 
           const wallet = walletUtils.generate(false)
-          const kusdtestnetKey = wallet.getPrivateKeyString().replace('0x', '')
-          const kusdtestnetPublicAddress = wallet.getAddressString()
-          // const kusdtestnetKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
-          // const kusdtestnetPublicAddress = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
-          return {kusdtestnetKey, kusdtestnetPublicAddress}
+          const privateKey = wallet.getPrivateKeyString().replace('0x', '')
+          const publicAddress = wallet.getAddressString()
+          // const privateKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
+          // const publicAddress = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
+          return {privateKey, publicAddress}
         } else {
           return null
         }
@@ -151,13 +149,13 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
               .getText(DATA_STORE_FOLDER, 'walletLocalData')
 
           engine.walletLocalData = new WalletLocalData(result)
-          engine.walletLocalData.kusdtestnetAddress = engine.walletInfo.keys.kusdtestnetAddress
+          engine.walletLocalData.address = engine.walletInfo.keys.address
         } catch (err) {
           try {
             console.log(err)
             console.log('No walletLocalData setup yet: Failure is ok')
             engine.walletLocalData = new WalletLocalData(null)
-            engine.walletLocalData.kusdtestnetAddress = engine.walletInfo.keys.kusdtestnetAddress
+            engine.walletLocalData.address = engine.walletInfo.keys.address
             await engine.walletLocalFolder
               .folder(DATA_STORE_FOLDER)
               .file(DATA_STORE_FILE)
@@ -180,7 +178,7 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
         if (
           typeof parsedUri.scheme !== 'undefined' &&
-          parsedUri.scheme !== 'kusdtestnet'
+          parsedUri.scheme !== currencyInfo.pluginName
         ) {
           throw new Error('InvalidUriError') // possibly scanning wrong crypto type
         }
@@ -237,13 +235,13 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
         }
         const amountStr = getParameterByName('amount', uri)
         if (amountStr && typeof amountStr === 'string') {
-          const denom = getDenomInfo('KUSD')
+          const denom = getDenomInfo(currencyInfo.currencyCode)
           if (!denom) {
             throw new Error('InternalErrorInvalidCurrencyCode')
           }
           nativeAmount = bns.mul(amountStr, denom.multiplier)
           nativeAmount = bns.toFixed(nativeAmount, 0, 0)
-          currencyCode = 'KUSD'
+          currencyCode = currencyInfo.currencyCode
         }
         const label = getParameterByName('label', uri)
         const message = getParameterByName('message', uri)
@@ -284,7 +282,7 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
           let queryString: string = ''
 
           if (typeof obj.nativeAmount === 'string') {
-            let currencyCode: string = 'KUSD'
+            let currencyCode: string = currencyInfo.currencyCode
             const nativeAmount:string = obj.nativeAmount
             if (typeof obj.currencyCode === 'string') {
               currencyCode = obj.currencyCode
@@ -308,7 +306,7 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
           queryString = queryString.substr(0, queryString.length - 1)
 
           const serializeObj = {
-            scheme: 'kusdtestnet',
+            scheme: currencyInfo.pluginName,
             path: obj.publicAddress,
             query: queryString
           }
@@ -320,13 +318,13 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
     if (global.OS && global.OS === 'ios') {
       const metaTokens = []
-      for (const metaToken of kusdPlugin.currencyInfo.metaTokens) {
+      for (const metaToken of kowalaPlugin.currencyInfo.metaTokens) {
         const currencyCode = metaToken.currencyCode
-        if (kusdPlugin.currencyInfo.defaultSettings.otherSettings.iosAllowedTokens[currencyCode] === true) {
+        if (kowalaPlugin.currencyInfo.defaultSettings.otherSettings.iosAllowedTokens[currencyCode] === true) {
           metaTokens.push(metaToken)
         }
       }
-      kusdPlugin.currencyInfo.metaTokens = metaTokens
+      kowalaPlugin.currencyInfo.metaTokens = metaTokens
     }
 
     async function initPlugin (opts: any) {
@@ -340,12 +338,12 @@ export const kusdCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
       //       .getText(DATA_STORE_FOLDER, 'walletLocalData')
       //
       //   this.walletLocalData = new WalletLocalData(result)
-      //   this.walletLocalData.kusdtestnetAddress = this.walletInfo.keys.kusdtestnetAddress
+      //   this.walletLocalData.address = this.walletInfo.keys.address
       // }
 
       // Spin off network query to get updated currencyInfo and save that to disk for future bootups
 
-      return kusdPlugin
+      return kowalaPlugin
     }
     return initPlugin(opts)
   }

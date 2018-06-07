@@ -5,9 +5,8 @@ import type { EdgeCurrencyInfo } from 'edge-core-js'
 import type { Settings } from './types'
 
 const otherSettings:Settings = {
-  apiServers: [
-    'https://wallet.kowala.io/api'
-  ],
+  chainId: 3,
+  apiServer: 'https://wallet.kowala.io/api',
   iosAllowedTokens: {}
 }
 
@@ -20,9 +19,10 @@ export const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'KUSD',
   currencyName: 'kUSD',
-  pluginName: 'kusdtestnet',
+  pluginName: 'kowala',
   walletTypes: [
-    'wallet:kusdtestnet'
+    'wallet:kusd-testnet',
+    'wallet:kusd-zygote'
   ],
 
   defaultSettings,

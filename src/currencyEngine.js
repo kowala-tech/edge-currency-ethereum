@@ -33,7 +33,7 @@ import { isHex, normalizeAddress, bufToHex, validateObject, toHex } from './util
 const Buffer = require('buffer/').Buffer
 const abi = require('../lib/export-fixes-bundle.js').ABI
 const walletUtils = require('../lib/export-fixes-bundle.js').Wallet
-const KusdTx = require('../lib/export-fixes-bundle.js').Transaction
+const KowalaTx = require('../lib/export-fixes-bundle.js').Transaction
 
 const ADDRESS_POLL_MILLISECONDS = 3000
 const BLOCKHEIGHT_POLL_MILLISECONDS = 3000
@@ -48,7 +48,7 @@ type BroadcastResults = {
  decrementNonce: boolean
 }
 
-class KusdParams {
+class KowalaParams {
  from: Array<string>
  to: Array<string>
  gas: string
@@ -126,28 +126,28 @@ class Engine {
    }
 
    // Hard coded for testing
-   // this.walletInfo.keys.kusdtestnetKey = '389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
-   // this.walletInfo.keys.kusdtestnetAddress = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
+   // this.walletInfo.keys.privateKey = '389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
+   // this.walletInfo.keys.address = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
    this.edgeTxLibCallbacks = callbacks
    this.walletLocalFolder = walletLocalFolder
 
    // Fix messed-up wallets that have a private key in the wrong place:
-   if (typeof this.walletInfo.keys.kusdtestnetKey !== 'string') {
-     if (walletInfo.keys.keys && walletInfo.keys.keys.kusdtestnetKey) {
-       this.walletInfo.keys.kusdtestnetKey = walletInfo.keys.keys.kusdtestnetKey
+   if (typeof this.walletInfo.keys.privateKey !== 'string') {
+     if (walletInfo.keys.keys && walletInfo.keys.keys.privateKey) {
+       this.walletInfo.keys.privateKey = walletInfo.keys.keys.privateKey
      }
    }
 
    // Fix messed-up wallets that have a public address in the wrong place:
-   if (typeof this.walletInfo.keys.kusdtestnetAddress !== 'string') {
-     if (walletInfo.keys.kusdtestnetPublicAddress) {
-       this.walletInfo.keys.kusdtestnetAddress = walletInfo.keys.kusdtestnetPublicAddress
-     } else if (walletInfo.keys.keys && walletInfo.keys.keys.kusdtestnetPublicAddress) {
-       this.walletInfo.keys.kusdtestnetAddress = walletInfo.keys.keys.kusdtestnetPublicAddress
+   if (typeof this.walletInfo.keys.address !== 'string') {
+     if (walletInfo.keys.publicAddress) {
+       this.walletInfo.keys.address = walletInfo.keys.publicAddress
+     } else if (walletInfo.keys.keys && walletInfo.keys.keys.publicAddress) {
+       this.walletInfo.keys.address = walletInfo.keys.keys.publicAddress
      } else {
-       const privKey = Buffer.from(this.walletInfo.keys.kusdtestnetKey, 'hex')
+       const privKey = Buffer.from(this.walletInfo.keys.privateKey, 'hex')
        const wallet = walletUtils.fromPrivateKey(privKey)
-       this.walletInfo.keys.kusdtestnetAddress = wallet.getAddressString()
+       this.walletInfo.keys.address = wallet.getAddressString()
      }
    }
 
@@ -158,7 +158,7 @@ class Engine {
   // Private methods
   // *************************************
  async fetchGetApi (cmd: string) {
-   const url = sprintf('%s/%s', this.currentSettings.otherSettings.apiServers[0], cmd)
+   const url = sprintf('%s/%s', this.currentSettings.otherSettings.apiServer, cmd)
    return this.fetchGet(url)
  }
 
@@ -213,17 +213,17 @@ class Engine {
    const timestamp:number = parseInt(tx.timestamp)
    const nativeNetworkFee:string = bns.mul(gasPrice, gasUsed)
 
-   if (from === this.walletLocalData.kusdtestnetAddress.toLowerCase()) {
+   if (from === this.walletLocalData.address.toLowerCase()) {
      netNativeAmount = bns.sub('0', amount)
 
      // For spends, include the network fee in the transaction amount
      netNativeAmount = bns.sub(netNativeAmount, nativeNetworkFee)
    } else {
      netNativeAmount = bns.add('0', amount)
-     ourReceiveAddresses.push(this.walletLocalData.kusdtestnetAddress.toLowerCase())
+     ourReceiveAddresses.push(this.walletLocalData.address.toLowerCase())
    }
 
-   const kusdParams = new KusdParams(
+   const kowalaParams = new KowalaParams(
      [ from ],
      [ to ],
      nativeNetworkFee,
@@ -237,14 +237,14 @@ class Engine {
    const edgeTransaction:EdgeTransaction = {
      txid: tx.hash,
      date: timestamp,
-     currencyCode: 'KUSD',
+     currencyCode: currencyInfo.currencyCode,
      blockHeight: blockHeight,
      nativeAmount: netNativeAmount,
      networkFee: nativeNetworkFee,
 
      ourReceiveAddresses,
      signedTx: 'unsigned',
-     otherParams: kusdParams
+     otherParams: kowalaParams
    }
 
    const idx = this.findTransaction(PRIMARY_CURRENCY, tx.hash)
@@ -315,7 +315,7 @@ class Engine {
  }
 
  async checkTransactionsFetch () {
-   const address = this.walletLocalData.kusdtestnetAddress
+   const address = this.walletLocalData.address
    const endBlock:number = 999999999
    let startBlock:number = 0
    let checkAddressSuccess = true
@@ -427,7 +427,7 @@ class Engine {
   // Check all addresses for new transactions
   // **********************************************
  async checkAddressesInnerLoop () {
-   const address = this.walletLocalData.kusdtestnetAddress
+   const address = this.walletLocalData.address
    try {
      //  only has one address
      let url = ''
@@ -619,7 +619,7 @@ class Engine {
    const temp = JSON.stringify({
      enabledTokens: this.walletLocalData.enabledTokens,
      networkFees: this.walletLocalData.networkFees,
-     kusdtestnetAddress: this.walletLocalData.kusdtestnetAddress
+     address: this.walletLocalData.address
    })
    this.walletLocalData = new WalletLocalData(temp)
    this.walletLocalDataDirty = true
@@ -847,7 +847,7 @@ class Engine {
 
   // synchronous
  getFreshAddress (options: any): EdgeFreshAddress {
-   return { publicAddress: this.walletLocalData.kusdtestnetAddress }
+   return { publicAddress: this.walletLocalData.address }
  }
 
   // synchronous
@@ -904,14 +904,14 @@ class Engine {
      currencyCode = edgeSpendInfo.currencyCode
      if (!this.getTokenStatus(currencyCode)) {
        throw (new Error('Error: Token not supported or enabled'))
-     } else if (currencyCode !== 'KUSD') {
+     } else if (currencyCode !== currencyInfo.currencyCode) {
        tokenInfo = this.getTokenInfo(currencyCode)
        if (!tokenInfo || typeof tokenInfo.contractAddress !== 'string') {
          throw (new Error('Error: Token not supported or invalid contract address'))
        }
      }
    } else {
-     currencyCode = 'KUSD'
+     currencyCode = currencyInfo.currencyCode
    }
    edgeSpendInfo.currencyCode = currencyCode
 
@@ -929,8 +929,8 @@ class Engine {
    }
 
    if (currencyCode === PRIMARY_CURRENCY) {
-     params = new KusdParams(
-       [this.walletLocalData.kusdtestnetAddress],
+     params = new KowalaParams(
+       [this.walletLocalData.address],
        [publicAddress],
        gasLimit,
        gasPrice,
@@ -946,8 +946,8 @@ class Engine {
      } else {
        throw new Error('makeSpend: Invalid contract address')
      }
-     params = new KusdParams(
-       [this.walletLocalData.kusdtestnetAddress],
+     params = new KowalaParams(
+       [this.walletLocalData.address],
        [contractAddress],
        gasLimit,
        gasPrice,
@@ -967,17 +967,10 @@ class Engine {
 
    const InsufficientFundsError = new Error('Insufficient funds')
    InsufficientFundsError.name = 'ErrorInsufficientFunds'
-   const InsufficientFundsEthError = new Error('Insufficient KUSD for transaction fee')
+   const InsufficientFundsEthError = new Error('Insufficient funds for transaction fee')
    InsufficientFundsEthError.name = 'ErrorInsufficientFundsMoreEth'
 
-   // Check for insufficient funds
-   // let nativeAmountBN = new BN(nativeAmount, 10)
-   // const gasPriceBN = new BN(gasPrice, 10)
-   // const gasLimitBN = new BN(gasLimit, 10)
-   // const nativeNetworkFeeBN = gasPriceBN.mul(gasLimitBN)
-   // const balanceEthBN = new BN(this.walletLocalData.totalBalances.KUSD, 10)
-
-   const balanceEth = this.walletLocalData.totalBalances.KUSD
+   const balanceEth = this.walletLocalData.totalBalances[currencyInfo.currencyCode]
    let nativeNetworkFee = bns.mul(gasPrice, gasLimit)
    let totalTxAmount = '0'
    let parentNetworkFee = null
@@ -1070,13 +1063,12 @@ class Engine {
      to: edgeTransaction.otherParams.to[0],
      value: nativeAmountHex,
      data: data,
-     // EIP 155 chainId - mainnet: 1, testnet: 2
-     chainId: 2
+     chainId: currencyInfo.defaultSettings.otherSettings.chainId
    }
 
-   const privKey = Buffer.from(this.walletInfo.keys.kusdtestnetKey, 'hex')
+   const privKey = Buffer.from(this.walletInfo.keys.privateKey, 'hex')
 
-   const tx = new KusdTx(txParams)
+   const tx = new KowalaTx(txParams)
    tx.sign(privKey)
 
    edgeTransaction.signedTx = bufToHex(tx.serialize())
@@ -1199,15 +1191,15 @@ class Engine {
  }
 
  getDisplayPrivateSeed () {
-   if (this.walletInfo.keys && this.walletInfo.keys.kusdtestnetKey) {
-     return this.walletInfo.keys.kusdtestnetKey
+   if (this.walletInfo.keys && this.walletInfo.keys.privateKey) {
+     return this.walletInfo.keys.privateKey
    }
    return ''
  }
 
  getDisplayPublicSeed () {
-   if (this.walletInfo.keys && this.walletInfo.keys.kusdtestnetAddress) {
-     return this.walletInfo.keys.kusdtestnetAddress
+   if (this.walletInfo.keys && this.walletInfo.keys.address) {
+     return this.walletInfo.keys.address
    }
    return ''
  }

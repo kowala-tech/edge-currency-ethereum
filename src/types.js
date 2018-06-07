@@ -10,7 +10,8 @@ export const DATA_STORE_FILE = 'walletLocalData.json'
 export const PRIMARY_CURRENCY = currencyInfo.currencyCode
 
 export type Settings = {
-  apiServers: Array<string>,
+  apiServer: string,
+  chainId: number,
   iosAllowedTokens: {[currencyCode: string]: boolean}
 }
 
@@ -93,7 +94,7 @@ export class WalletLocalData {
   blockHeight: number
   lastAddressQueryHeight: number
   nextNonce: string
-  kusdtestnetAddress: string
+  address: string
   totalBalances: {[currencyCode: string]: string}
   enabledTokens: Array<string>
   transactionsObj: {[currencyCode: string]: Array<EdgeTransaction>}
@@ -115,7 +116,7 @@ export class WalletLocalData {
 
     this.networkFees = defaultNetworkFees
 
-    this.kusdtestnetAddress = ''
+    this.address = ''
     this.enabledTokens = [ PRIMARY_CURRENCY ]
     if (jsonString !== null) {
       const data = JSON.parse(jsonString)
@@ -123,7 +124,7 @@ export class WalletLocalData {
       if (typeof data.blockHeight === 'number') this.blockHeight = data.blockHeight
       if (typeof data.lastAddressQueryHeight === 'string') this.lastAddressQueryHeight = data.lastAddressQueryHeight
       if (typeof data.nextNonce === 'string') this.nextNonce = data.nextNonce
-      if (typeof data.kusdtestnetAddress === 'string') this.kusdtestnetAddress = data.kusdtestnetAddress
+      if (typeof data.address === 'string') this.address = data.address
       if (typeof data.totalBalances !== 'undefined') this.totalBalances = data.totalBalances
       if (typeof data.enabledTokens !== 'undefined') this.enabledTokens = data.enabledTokens
       if (typeof data.networkFees !== 'undefined') this.networkFees = data.networkFees

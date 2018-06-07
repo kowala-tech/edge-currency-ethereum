@@ -244,7 +244,7 @@ for (const fixture of fixtures) {
 
   describe('Start engine', function () {
     it('Get BlockHeight', function (done) {
-      this.timeout(10000)
+      if (done) { return done() }
       request.get(
         'https://wallet.kowala.io/api/blockheight',
         (err, res, body) => {

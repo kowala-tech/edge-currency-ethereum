@@ -1,7 +1,7 @@
 {
-  "name": "edge-currency-kusd",
+  "name": "edge-currency-kowala",
   "version": "0.0.1",
-  "description": "kUSD currency plugin for Edge",
+  "description": "Kowala currency plugin for Edge",
   "homepage": "https://kowala.tech/",
   "license": "SEE LICENSE IN LICENSE",
   "author": "Kowala",
@@ -15,7 +15,7 @@
   "module": "./lib/index.es.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:kowala-tech/edge-currency-kusd.git"
+    "url": "git@github.com:kowala-tech/edge-currency-kowala.git"
   },
   "scripts": {
     "build": "npm run webpack && npm run rollup && npm run build:flow",
