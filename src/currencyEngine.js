@@ -158,7 +158,8 @@ class Engine {
   // Private methods
   // *************************************
  async fetchGetApi (cmd: string) {
-   const url = sprintf('%s/%s', this.currentSettings.otherSettings.apiServer, cmd)
+   const networkName = this.walletInfo.type
+   const url = sprintf('%s/%s', this.currentSettings.otherSettings.apiServer[networkName], cmd)
    return this.fetchGet(url)
  }
 
@@ -1056,6 +1057,7 @@ class Engine {
      nativeAmountHex = '0x00'
    }
 
+   const networkName = this.walletInfo.type
    const txParams = {
      nonce: nonceHex,
      gasPrice: gasPriceHex,
@@ -1063,7 +1065,7 @@ class Engine {
      to: edgeTransaction.otherParams.to[0],
      value: nativeAmountHex,
      data: data,
-     chainId: currencyInfo.defaultSettings.otherSettings.chainId
+     chainId: currencyInfo.defaultSettings.otherSettings.chainId[networkName]
    }
 
    const privKey = Buffer.from(this.walletInfo.keys.privateKey, 'hex')
