@@ -8,7 +8,7 @@ const otherSettings:Settings = {
   chainId: {
     'kusd-zygote': 3
   },
-  apiServer: {
+  apiServers: {
     'kusd-zygote': 'https://api.zygote.kowala.io/api'
   },
   iosAllowedTokens: {}

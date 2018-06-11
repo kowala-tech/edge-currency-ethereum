@@ -10,7 +10,7 @@ export const DATA_STORE_FILE = 'walletLocalData.json'
 export const PRIMARY_CURRENCY = currencyInfo.currencyCode
 
 export type Settings = {
-  apiServer: {},
+  apiServers: {},
   chainId: {},
   iosAllowedTokens: {[currencyCode: string]: boolean}
 }
