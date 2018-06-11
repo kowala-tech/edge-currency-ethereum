@@ -92,51 +92,36 @@ export const kowalaCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
       currencyInfo,
 
       createPrivateKey: (walletType: string) => {
-        const type = walletType.replace('wallet:', '')
-
-        if (type === currencyInfo.pluginName) {
-          const cryptoObj = {
-            randomBytes: randomBuffer
-          }
-          walletUtils.overrideCrypto(cryptoObj)
-
-          const wallet = walletUtils.generate(false)
-          const privateKey = wallet.getPrivateKeyString().replace('0x', '')
-          return { privateKey }
-        } else {
-          throw new Error('InvalidWalletType')
+        const cryptoObj = {
+          randomBytes: randomBuffer
         }
+        walletUtils.overrideCrypto(cryptoObj)
+
+        const wallet = walletUtils.generate(false)
+        const privateKey = wallet.getPrivateKeyString().replace('0x', '')
+        return { privateKey }
       },
 
       derivePublicKey: (walletInfo: EdgeWalletInfo) => {
-        const type = walletInfo.type.replace('wallet:', '')
-        if (type === currencyInfo.pluginName) {
-          const privKey = hexToBuf(walletInfo.keys.privateKey)
-          const wallet = walletUtils.fromPrivateKey(privKey)
-          const address = wallet.getAddressString()
-          return { address }
-        } else {
-          throw new Error('InvalidWalletType')
-        }
+        const privKey = hexToBuf(walletInfo.keys.privateKey)
+        const wallet = walletUtils.fromPrivateKey(privKey)
+        const address = wallet.getAddressString()
+        return { address }
       },
 
       // XXX Deprecated. To be removed once Core supports createPrivateKey and derivePublicKey -paulvp
       createMasterKeys: (walletType: string) => {
-        if (walletType === currencyInfo.pluginName) {
-          const cryptoObj = {
-            randomBytes: randomBuffer
-          }
-          walletUtils.overrideCrypto(cryptoObj)
-
-          const wallet = walletUtils.generate(false)
-          const privateKey = wallet.getPrivateKeyString().replace('0x', '')
-          const publicAddress = wallet.getAddressString()
-          // const privateKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
-          // const publicAddress = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
-          return {privateKey, publicAddress}
-        } else {
-          return null
+        const cryptoObj = {
+          randomBytes: randomBuffer
         }
+        walletUtils.overrideCrypto(cryptoObj)
+
+        const wallet = walletUtils.generate(false)
+        const privateKey = wallet.getPrivateKeyString().replace('0x', '')
+        const publicAddress = wallet.getAddressString()
+        // const privateKey = '0x389b07b3466eed587d6bdae09a3613611de9add2635432d6cd1521af7bbc3757'
+        // const publicAddress = '0xd6e579085c82329c89fca7a9f012be59028ed53f'
+        return {privateKey, publicAddress}
       },
 
       async makeEngine (walletInfo: EdgeWalletInfo, opts: EdgeCurrencyEngineOptions): Promise<EdgeCurrencyEngine> {

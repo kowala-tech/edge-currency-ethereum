@@ -41,7 +41,9 @@ const NETWORKFEES_POLL_MILLISECONDS = (60 * 10 * 1000) // 10 minutes
 const SAVE_DATASTORE_MILLISECONDS = 1000
 const ADDRESS_QUERY_LOOKBACK_BLOCKS = (60 * 60 * 24 * 7) // ~ one week
 
-const PRIMARY_CURRENCY = currencyInfo.currencyCode
+const DEFAULT_CURRENCY_CODE = currencyInfo.currencyCode
+console.log('setting code to')
+console.log(DEFAULT_CURRENCY_CODE)
 
 type BroadcastResults = {
  incrementNonce: boolean,
@@ -247,12 +249,12 @@ class Engine {
      otherParams: kowalaParams
    }
 
-   const idx = this.findTransaction(PRIMARY_CURRENCY, tx.hash)
+   const idx = this.findTransaction(DEFAULT_CURRENCY_CODE, tx.hash)
    if (idx === -1) {
      this.log(sprintf('New transaction: %s', tx.hash))
 
      // New transaction not in database
-     this.addTransaction(PRIMARY_CURRENCY, edgeTransaction)
+     this.addTransaction(DEFAULT_CURRENCY_CODE, edgeTransaction)
 
      this.edgeTxLibCallbacks.onTransactionsChanged(
        this.transactionsChangedArray
@@ -260,7 +262,7 @@ class Engine {
      this.transactionsChangedArray = []
    } else {
      // Already have this tx in the database. See if anything changed
-     const transactionsArray = this.walletLocalData.transactionsObj[ PRIMARY_CURRENCY ]
+     const transactionsArray = this.walletLocalData.transactionsObj[ DEFAULT_CURRENCY_CODE ]
      const edgeTx = transactionsArray[ idx ]
      if (
        edgeTx.blockHeight !== edgeTransaction.blockHeight ||
@@ -269,7 +271,7 @@ class Engine {
     edgeTx.otherParams.errorVal !== edgeTransaction.otherParams.errorVal
      ) {
        this.log(sprintf('Update transaction: %s height:%s', tx.hash, tx.blockHeight))
-       this.updateTransaction(PRIMARY_CURRENCY, edgeTransaction, idx)
+       this.updateTransaction(DEFAULT_CURRENCY_CODE, edgeTransaction, idx)
        this.edgeTxLibCallbacks.onTransactionsChanged(
          this.transactionsChangedArray
        )
@@ -372,13 +374,13 @@ class Engine {
        for (let i = 0; i < transactions.length; i++) {
          const tx = transactions[i]
          this.processTransaction(tx)
-         this.tokenCheckStatus[ PRIMARY_CURRENCY ] = ((i + 1) / transactions.length)
+         this.tokenCheckStatus[ DEFAULT_CURRENCY_CODE ] = ((i + 1) / transactions.length)
          if (i % 10 === 0) {
            this.updateOnAddressesChecked()
          }
        }
        if (transactions.length === 0) {
-         this.tokenCheckStatus[ PRIMARY_CURRENCY ] = 1
+         this.tokenCheckStatus[ DEFAULT_CURRENCY_CODE ] = 1
        }
        this.updateOnAddressesChecked()
      } else {
@@ -437,7 +439,7 @@ class Engine {
      // Fetch token balances
      // ************************************
      for (const tk of this.walletLocalData.enabledTokens) {
-       if (tk === PRIMARY_CURRENCY) {
+       if (tk === DEFAULT_CURRENCY_CODE) {
          url = sprintf('balance/%s', address)
        } else {
          continue
@@ -737,7 +739,7 @@ class Engine {
 
   // synchronous
  getBalance (options: any): string {
-   let currencyCode = PRIMARY_CURRENCY
+   let currencyCode = DEFAULT_CURRENCY_CODE
 
    if (typeof options !== 'undefined') {
      const valid = validateObject(options, {
@@ -762,7 +764,7 @@ class Engine {
 
   // synchronous
  getNumTransactions (options: any): number {
-   let currencyCode = PRIMARY_CURRENCY
+   let currencyCode = DEFAULT_CURRENCY_CODE
 
    const valid = validateObject(options, {
      'type': 'object',
@@ -784,7 +786,7 @@ class Engine {
 
   // asynchronous
  async getTransactions (options: any) {
-   let currencyCode:string = PRIMARY_CURRENCY
+   let currencyCode:string = DEFAULT_CURRENCY_CODE
 
    const valid:boolean = validateObject(options, {
      'type': 'object',
@@ -928,7 +930,7 @@ class Engine {
      throw new Error('No valid spendTarget')
    }
 
-   if (currencyCode === PRIMARY_CURRENCY) {
+   if (currencyCode === DEFAULT_CURRENCY_CODE) {
      params = new KowalaParams(
        [this.walletLocalData.address],
        [publicAddress],
@@ -970,21 +972,21 @@ class Engine {
    const InsufficientFundsEthError = new Error('Insufficient funds for transaction fee')
    InsufficientFundsEthError.name = 'ErrorInsufficientFundsMoreEth'
 
-   const balanceEth = this.walletLocalData.totalBalances[currencyInfo.currencyCode]
+   const balanceKusd = this.walletLocalData.totalBalances[currencyInfo.currencyCode]
    let nativeNetworkFee = bns.mul(gasPrice, gasLimit)
    let totalTxAmount = '0'
    let parentNetworkFee = null
 
-   if (currencyCode === PRIMARY_CURRENCY) {
+   if (currencyCode === DEFAULT_CURRENCY_CODE) {
      totalTxAmount = bns.add(nativeNetworkFee, nativeAmount)
-     if (bns.gt(totalTxAmount, balanceEth)) {
+     if (bns.gt(totalTxAmount, balanceKusd)) {
        throw (InsufficientFundsError)
      }
      nativeAmount = bns.mul(totalTxAmount, '-1')
    } else {
      parentNetworkFee = nativeNetworkFee
 
-     if (bns.gt(nativeNetworkFee, balanceEth)) {
+     if (bns.gt(nativeNetworkFee, balanceKusd)) {
        throw (InsufficientFundsEthError)
      }
 
@@ -1031,7 +1033,7 @@ class Engine {
    let nativeAmountHex
 
    // let nativeAmountHex = bns.mul('-1', edgeTransaction.nativeAmount, 16)
-   if (edgeTransaction.currencyCode === PRIMARY_CURRENCY) {
+   if (edgeTransaction.currencyCode === DEFAULT_CURRENCY_CODE) {
      // Remove the networkFee from the nativeAmount
      const nativeAmount = bns.add(edgeTransaction.nativeAmount, edgeTransaction.networkFee)
      nativeAmountHex = bns.mul('-1', nativeAmount, 16)
@@ -1044,7 +1046,7 @@ class Engine {
    //
    const nonceHex = toHex(this.walletLocalData.nextNonce)
    let data
-   if (edgeTransaction.currencyCode === PRIMARY_CURRENCY) {
+   if (edgeTransaction.currencyCode === DEFAULT_CURRENCY_CODE) {
      data = ''
    } else {
      const dataArray = abi.simpleEncode(

@@ -7,7 +7,7 @@ import type { EdgeTransaction } from 'edge-core-js'
 import { currencyInfo } from './currencyInfo.js'
 export const DATA_STORE_FOLDER = 'txEngineFolder'
 export const DATA_STORE_FILE = 'walletLocalData.json'
-export const PRIMARY_CURRENCY = currencyInfo.currencyCode
+export const DEFAULT_CURRENCY_CODE = currencyInfo.currencyCode
 
 export type Settings = {
   apiServers: {},
@@ -117,7 +117,7 @@ export class WalletLocalData {
     this.networkFees = defaultNetworkFees
 
     this.address = ''
-    this.enabledTokens = [ PRIMARY_CURRENCY ]
+    this.enabledTokens = [ DEFAULT_CURRENCY_CODE ]
     if (jsonString !== null) {
       const data = JSON.parse(jsonString)
 
