@@ -158,7 +158,7 @@ class Engine {
   // Private methods
   // *************************************
  async fetchGetApi (cmd: string) {
-   const url = sprintf('%s/%s', this.currentSettings.otherSettings.apiServers[0], cmd)
+   const url = sprintf('%s/%s', this.currentSettings.otherSettings.apiServers['kusd-zygote'], cmd)
    return this.fetchGet(url)
  }
 
@@ -1063,7 +1063,7 @@ class Engine {
      to: edgeTransaction.otherParams.to[0],
      value: nativeAmountHex,
      data: data,
-     chainId: currencyInfo.defaultSettings.otherSettings.chainId[0]
+     chainId: currencyInfo.defaultSettings.otherSettings.chainId['kusd-zygote']
    }
 
    const privKey = Buffer.from(this.walletInfo.keys.privateKey, 'hex')
