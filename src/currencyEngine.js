@@ -39,11 +39,8 @@ const ADDRESS_POLL_MILLISECONDS = 3000
 const BLOCKHEIGHT_POLL_MILLISECONDS = 3000
 const NETWORKFEES_POLL_MILLISECONDS = (60 * 10 * 1000) // 10 minutes
 const SAVE_DATASTORE_MILLISECONDS = 1000
-const ADDRESS_QUERY_LOOKBACK_BLOCKS = (60 * 60 * 24 * 7) // ~ one week
 
 const DEFAULT_CURRENCY_CODE = currencyInfo.currencyCode
-console.log('setting code to')
-console.log(DEFAULT_CURRENCY_CODE)
 
 type BroadcastResults = {
  incrementNonce: boolean,
@@ -255,7 +252,6 @@ class Engine {
 
      // New transaction not in database
      this.addTransaction(DEFAULT_CURRENCY_CODE, edgeTransaction)
-
      this.edgeTxLibCallbacks.onTransactionsChanged(
        this.transactionsChangedArray
      )
@@ -318,16 +314,12 @@ class Engine {
 
  async checkTransactionsFetch () {
    const address = this.walletLocalData.address
-   const endBlock:number = 999999999
-   let startBlock:number = 0
+   const endBlock:number = 1000000000000000000
+   const startBlock:number = this.walletLocalData.lastAddressQueryHeight
    let checkAddressSuccess = true
    let url = ''
    let jsonObj = {}
    let valid = false
-   if (this.walletLocalData.lastAddressQueryHeight > ADDRESS_QUERY_LOOKBACK_BLOCKS) {
-     // Only query for transactions as far back as ADDRESS_QUERY_LOOKBACK_BLOCKS from the last time we queried transactions
-     startBlock = this.walletLocalData.lastAddressQueryHeight - ADDRESS_QUERY_LOOKBACK_BLOCKS
-   }
 
    try {
      url = sprintf('transactions/%s/from/%s/to/%s', address, startBlock, endBlock)
@@ -739,21 +731,7 @@ class Engine {
 
   // synchronous
  getBalance (options: any): string {
-   let currencyCode = DEFAULT_CURRENCY_CODE
-
-   if (typeof options !== 'undefined') {
-     const valid = validateObject(options, {
-       'type': 'object',
-       'properties': {
-         'currencyCode': {'type': 'string'}
-       }
-     })
-
-     if (valid) {
-       currencyCode = options.currencyCode
-     }
-   }
-
+   const currencyCode = DEFAULT_CURRENCY_CODE
    if (typeof this.walletLocalData.totalBalances[currencyCode] === 'undefined') {
      return '0'
    } else {
