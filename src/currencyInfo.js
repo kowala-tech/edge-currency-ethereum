@@ -4,7 +4,7 @@
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 import type { Settings } from './types'
 
-const otherSettings:Settings = {
+const otherSettings: Settings = {
   chainId: {
     'kusd-zygote': 3
   },
@@ -14,7 +14,7 @@ const otherSettings:Settings = {
   iosAllowedTokens: {}
 }
 
-const defaultSettings:any = {
+const defaultSettings: any = {
   customFeeSettings: ['gasLimit', 'gasPrice'],
   otherSettings
 }

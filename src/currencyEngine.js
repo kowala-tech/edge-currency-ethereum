@@ -187,7 +187,7 @@ class Engine {
        'required': ['block_height']
      })
      if (valid) {
-       const blockHeight:number = parseInt(jsonObj.block_height)
+       const blockHeight: number = parseInt(jsonObj.block_height)
        this.log(`Got block height ${blockHeight}`)
        if (this.walletLocalData.blockHeight !== blockHeight) {
          this.walletLocalData.blockHeight = blockHeight // Convert to decimal
@@ -201,16 +201,16 @@ class Engine {
  }
 
  processTransaction (tx: any) {
-   let netNativeAmount:string // Amount received into wallet
-   const ourReceiveAddresses:Array<string> = []
-   const gasPrice:string = String(tx.gas_price)
-   const gasUsed:string = String(tx.gas_used)
-   const amount:string = String(tx.amount)
-   const to:string = String(tx.to).toLowerCase()
-   const from:string = String(tx.from).toLowerCase()
-   const blockHeight:number = parseInt(tx.block_height)
-   const timestamp:number = parseInt(tx.timestamp)
-   const nativeNetworkFee:string = bns.mul(gasPrice, gasUsed)
+   let netNativeAmount: string // Amount received into wallet
+   const ourReceiveAddresses: Array<string> = []
+   const gasPrice: string = String(tx.gas_price)
+   const gasUsed: string = String(tx.gas_used)
+   const amount: string = String(tx.amount)
+   const to: string = String(tx.to).toLowerCase()
+   const from: string = String(tx.from).toLowerCase()
+   const blockHeight: number = parseInt(tx.block_height)
+   const timestamp: number = parseInt(tx.timestamp)
+   const nativeNetworkFee: string = bns.mul(gasPrice, gasUsed)
 
    if (from === this.walletLocalData.address.toLowerCase()) {
      netNativeAmount = bns.sub('0', amount)
@@ -233,7 +233,7 @@ class Engine {
      null
    )
 
-   const edgeTransaction:EdgeTransaction = {
+   const edgeTransaction: EdgeTransaction = {
      txid: tx.hash,
      date: timestamp,
      currencyCode: currencyInfo.currencyCode,
@@ -314,8 +314,8 @@ class Engine {
 
  async checkTransactionsFetch () {
    const address = this.walletLocalData.address
-   const endBlock:number = 1000000000000000000
-   const startBlock:number = this.walletLocalData.lastAddressQueryHeight
+   const endBlock: number = 1000000000000000000
+   const startBlock: number = this.walletLocalData.lastAddressQueryHeight
    let checkAddressSuccess = true
    let url = ''
    let jsonObj = {}
@@ -764,9 +764,9 @@ class Engine {
 
   // asynchronous
  async getTransactions (options: any) {
-   let currencyCode:string = DEFAULT_CURRENCY_CODE
+   let currencyCode: string = DEFAULT_CURRENCY_CODE
 
-   const valid:boolean = validateObject(options, {
+   const valid: boolean = validateObject(options, {
      'type': 'object',
      'properties': {
        'currencyCode': {'type': 'string'}
@@ -781,8 +781,8 @@ class Engine {
      return []
    }
 
-   let startIndex:number = 0
-   let numEntries:number = 0
+   let startIndex: number = 0
+   let numEntries: number = 0
    if (options === null) {
      return this.walletLocalData.transactionsObj[currencyCode].slice(0)
    }
@@ -879,7 +879,7 @@ class Engine {
    let tokenInfo = {}
    tokenInfo.contractAddress = ''
 
-   let currencyCode:string = ''
+   let currencyCode: string = ''
    if (typeof edgeSpendInfo.currencyCode === 'string') {
      currencyCode = edgeSpendInfo.currencyCode
      if (!this.getTokenStatus(currencyCode)) {
@@ -983,7 +983,7 @@ class Engine {
    // **********************************
    // Create the unsigned EdgeTransaction
 
-   const edgeTransaction:EdgeTransaction = {
+   const edgeTransaction: EdgeTransaction = {
      txid: '', // txid
      date: 0, // date
      currencyCode, // currencyCode

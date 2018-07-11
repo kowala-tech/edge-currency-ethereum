@@ -87,7 +87,7 @@ export const kowalaCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
     io = opts.io
 
     console.log(`Creating Currency Plugin for Kowala`)
-    const kowalaPlugin:EdgeCurrencyPlugin = {
+    const kowalaPlugin: EdgeCurrencyPlugin = {
       pluginName: currencyInfo.pluginName,
       currencyInfo,
 
@@ -231,7 +231,7 @@ export const kowalaCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
         const label = getParameterByName('label', uri)
         const message = getParameterByName('message', uri)
 
-        const edgeParsedUri:EdgeParsedUri = {
+        const edgeParsedUri: EdgeParsedUri = {
           publicAddress: address
         }
         if (nativeAmount) {
@@ -268,7 +268,7 @@ export const kowalaCurrencyPluginFactory: EdgeCurrencyPluginFactory = {
 
           if (typeof obj.nativeAmount === 'string') {
             let currencyCode: string = currencyInfo.currencyCode
-            const nativeAmount:string = obj.nativeAmount
+            const nativeAmount: string = obj.nativeAmount
             if (typeof obj.currencyCode === 'string') {
               currencyCode = obj.currencyCode
             }
