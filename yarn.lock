@@ -1123,9 +1123,9 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
-edge-core-js@^0.9.4:
+"edge-core-js@https://github.com/kowala-tech/edge-core-js.git#develop":
   version "0.9.7"
-  resolved "https://registry.yarnpkg.com/edge-core-js/-/edge-core-js-0.9.7.tgz#49a6ab71efa0627c57fde1acbb7a2d9f88d706d0"
+  resolved "https://github.com/kowala-tech/edge-core-js.git#c3523994df9e25565e78b7a8fc767d5f327798fc"
   dependencies:
     aes-js "^3.1.0"
     base-x "^1.0.4"
@@ -1145,7 +1145,7 @@ edge-core-js@^0.9.4:
     rfc4648 "^1.1.0"
     scrypt-js "^2.0.3"
     utf8 "^3.0.0"
-    ws "^5.1.1"
+    ws "^5.2.2"
 
 elliptic@^6.2.3, elliptic@^6.4.0:
   version "6.4.0"
@@ -4570,9 +4570,9 @@ write@^0.2.1:
   dependencies:
     mkdirp "^0.5.1"
 
-ws@^5.1.1:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-5.2.1.tgz#37827a0ba772d072a843c3615b0ad38bcdb354eb"
+ws@^5.2.2:
+  version "5.2.2"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-5.2.2.tgz#dffef14866b8e8dc9133582514d1befaf96e980f"
   dependencies:
     async-limiter "~1.0.0"
 
