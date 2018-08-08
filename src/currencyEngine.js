@@ -173,6 +173,23 @@ class Engine {
    return response.json()
  }
 
+ async postApi (cmd: string) {
+   const url = sprintf('%s/%s', this.currentSettings.otherSettings.apiServers['kusd-zygote'], cmd)
+   return this.post(url)
+ }
+
+ async post (url: string) {
+   const response = await this.io.fetch(url, {
+     method: 'POST'
+   })
+   if (!response.ok) {
+     throw new Error(
+       `The server returned error code ${response.status} for ${url}`
+     )
+   }
+   return response.json()
+ }
+
   // *************************************
   // Poll on the blockheight
   // *************************************
@@ -1069,7 +1086,7 @@ class Engine {
 
    const hexTx = edgeTransaction.signedTx.replace('0x', '')
    const url = sprintf('broadcasttx/%s', hexTx)
-   const jsonObj = await this.fetchGetApi(url)
+   const jsonObj = await this.postApi(url)
 
    this.log('broadcastOverAPI jsonObj:', jsonObj)
    if (typeof jsonObj.error !== 'undefined') {
