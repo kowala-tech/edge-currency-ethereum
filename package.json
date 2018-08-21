@@ -32,7 +32,6 @@
     "pretest": "npm run build:test && npm run lint",
     "test": "nyc mocha --require source-map-support/register build/tests.cjs.js",
     "posttest": "nyc report --reporter=html",
-    "updot": "updot",
     "webpack": "webpack"
   },
   "dependencies": {
@@ -54,7 +53,7 @@
     "babel-preset-flow": "^6.23.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^6.0.0",
-    "edge-core-js": "https://github.com/kowala-tech/edge-core-js.git#develop",
+    "edge-core-js": "^0.6.1",
     "eslint": "4.5.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-plugin-flowtype": "^2.35.0",
@@ -77,7 +76,6 @@
     "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-multi-entry": "^2.0.2",
-    "updot": "^1.1.4",
     "webpack": "^1.14.0"
   },
   "standard": {
