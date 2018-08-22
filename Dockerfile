@@ -1,4 +1,6 @@
-FROM node:9
+FROM node:10
+
 ADD . /code
 WORKDIR /code
+
 CMD ["yarn"]
